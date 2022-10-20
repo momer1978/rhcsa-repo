@@ -1,0 +1,76 @@
+
+
+
+To practice for exam, I configured three servers. 
+Make sure they are on the same subnet 
+OR 
+atleast have network connectivity among each other
+
+Server1.example.com - installed httpd, hosted repos, configured nfs server and nfs share directories (This is not part of exam objectives but helps simulate the exam environment)
+Client1.example.com - practice machine
+Client2.example.com - practice machine
+
+
+For repo question.
+1. Create your account on developer.redhat.com
+2. after creating an account you'll have username and password
+3. Make sure server1.example.com is connected to internet
+
+
+### On server1.example.com (non of the actions on server1 is among exam objectives)
+-Using subscription manager register it with redhat network
+subscription-manager register
+username:
+Password:
+subscription-manager attach --auto
+
+-Install httpd
+dnf install httpd
+systemctl start httpd
+systemctl enable httpd
+systemctl status httpd
+
+-Mount RHEL8 dvd
+-- attach RHEL8 dvd to this vm
+mkdir /mnt/cdrom
+mount /dev/cdrom /mnt/cdrom
+cd /var/www/html
+cp -rf /mnt/cdrom/BaseOS .
+cp -rf /mnt/cdrom/AppStream .
+
+-Set the context if it is not already set 
+semanage fcontext -a -t httpd_sys_content_t /var/www/html/BaseOS
+semanage fcontext -a -t httpd_sys_content_t /var/www/html/AppStream
+restorecon -Rv /var/www/html/BaseOS
+restorecon -Rv /var/www/html/AppStream
+ 
+-Open the firewall
+firewall-cmd --add-service=http --permanent
+firewall-cmd --add-port=80/tcp --permanent
+firewall-cmd --reload
+
+-Restart httpd 
+systemctl stop httpd
+systemctl start httpd
+
+### On client1.example.com (This is one of the exam objective)
+dnf config-manager --add-repo http://server1.example.com/BaseOS
+dnf config-manager --add-repo http://server1.example.com/AppStream
+
+cd /etc/yum.repo.d/
+
+-- you'll see two files under this directory 
+server1.example.com_AppStream.repo
+server1.example.com_AppStream.repo
+
+-- edit both files to include following line
+gpgcheck=0
+
+-- If the question ask to add gpgkey then edit the files to add the following 
+gpgcheck=1
+gpgkey=http://server1.example.com/RPM-GPG-KEY-redhat-release
+
+
+
+
+
